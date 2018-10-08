@@ -78,16 +78,16 @@ def display_character(character)
 end
 
 def main_loop
-    if ARGV[0]
-      quiz_name = ARGV[0] 
-    else 
-      print 'Enter the name of a quiz: '
-      quiz_name = gets.strip.downcase
-    end
-    return if quiz_name.empty?
-    questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-    descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-    questions, descriptions = load_quiz(questions_file, descriptions_file)
+  if ARGV[0]
+    quiz_name = ARGV[0] 
+  else
+    print 'Enter the name of a quiz: '
+    quiz_name = gets.strip.downcase
+  end
+  return if quiz_name.empty?
+  questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+  descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+  questions, descriptions = load_quiz(questions_file, descriptions_file)
 
   loop do
     system 'clear'
