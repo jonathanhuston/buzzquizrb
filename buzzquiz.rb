@@ -1,7 +1,5 @@
 require 'csv'
-require 'rainbow/refinement'
-
-using Rainbow
+require 'rainbow'
 
 def parse_questions(lines)
   records = []
@@ -32,9 +30,8 @@ def parse_descriptions(lines)
   lines.each do |line|
     records[count] = {}
     records[count][:name] = line[0]
-    records[count][:color] = line[1]
-    brightness = line[2]
-    records[count][:color] += "." + brightness if brightness
+    records[count][:color] = line[1].intern
+    records[count][:bright] = (line[2] == "bright")
     records[count][:description] = line[3]
     count += 1
   end
@@ -73,8 +70,13 @@ end
 
 def display_character(character)
   puts
-  puts "You are #{character[:name]}."
-  puts "#{character[:description]}"
+  if character[:bright]
+    puts Rainbow("You are #{character[:name]}.").color(character[:color]).bright
+    puts Rainbow("#{character[:description]}").color(character[:color]).bright
+  else
+    puts Rainbow("You are #{character[:name]}.").color(character[:color])
+    puts Rainbow("#{character[:description]}").color(character[:color])
+  end
 end
 
 def main_loop
