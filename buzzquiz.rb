@@ -46,18 +46,25 @@ def load_quiz(questions_file, descriptions_file)
   lines[0][0].delete!("\ufeff")
   questions = parse_questions(lines)
   descriptions = parse_descriptions(CSV.read(descriptions_file))
-  return questions, descriptions
+  [questions, descriptions]
 end
 
 def run_quiz(questions, descriptions)
   point_totals = Array.new(descriptions.size, 0)
+  reply = 0
 
   questions.each do |question|
     puts question[:question]
     question[:answers].each_with_index { |answer, i| puts "#{i+1}) #{answer}" }
     puts
-    print ">> "
-    reply = gets.strip.to_i
+    loop do
+      print ">> "
+      reply = $stdin.gets.strip
+      exit if reply.empty?
+      reply = reply.to_i
+      break if (reply > 0) && (reply <= question[:answers].size)
+      puts "Huh?"
+    end
     point_totals.map!.with_index { |point_total, i| point_total + question[:points][reply-1][i].to_i }
     puts
   end
@@ -71,8 +78,12 @@ def display_character(character)
 end
 
 def main_loop
-    print 'Enter the name of a quiz: '
-    quiz_name = gets.strip.downcase
+    if ARGV[0]
+      quiz_name = ARGV[0] 
+    else 
+      print 'Enter the name of a quiz: '
+      quiz_name = gets.strip.downcase
+    end
     return if quiz_name.empty?
     questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
     descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
@@ -80,12 +91,15 @@ def main_loop
 
   loop do
     system 'clear'
+    puts "Okay, let's play the #{quiz_name.capitalize} quiz!"
+    puts
     point_totals = run_quiz(questions, descriptions)
     character = descriptions[point_totals.each_with_index.max[1]]
     display_character(character)
     print "\n\n"
     print "Play again? "
-    break if gets.strip.empty?
+    again = $stdin.gets.strip
+    break if ['n', 'N', ''].include? again
   end
 end
 
