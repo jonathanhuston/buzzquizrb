@@ -1,5 +1,8 @@
 require 'csv'
 require 'rainbow'
+require 'tk'
+require 'tkextlib/tile'
+require 'tkextlib/tkimg'
 
 def parse_questions(lines)
   records = []
@@ -23,7 +26,7 @@ def parse_questions(lines)
   records
 end
 
-def parse_descriptions(lines)
+def parse_descriptions(lines, images_folder)
   records = []
   count = 0
 
@@ -33,16 +36,19 @@ def parse_descriptions(lines)
     records[count][:color] = line[1].intern
     records[count][:bright] = (line[2] == "bright")
     records[count][:description] = line[3]
+    records[count][:image] = images_folder+line[0].tr(' ', '-')+".jpg"
     count += 1
   end
   records
 end
 
-def load_quiz(questions_file, descriptions_file)
+def load_quiz(questions_file, descriptions_file, images_folder)
   lines = CSV.read(questions_file)
   lines[0][0].delete!("\ufeff")
   questions = parse_questions(lines)
-  descriptions = parse_descriptions(CSV.read(descriptions_file))
+  lines = CSV.read(descriptions_file)
+  lines[0][0].delete!("\ufeff")
+  descriptions = parse_descriptions(lines, images_folder)
   [questions, descriptions]
 end
 
@@ -77,6 +83,16 @@ def display_character(character)
     puts Rainbow("You are #{character[:name]}.").color(character[:color])
     puts Rainbow("#{character[:description]}").color(character[:color])
   end
+
+  root = TkRoot.new {title "You are #{character[:name]}."}
+  content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:sticky => 'nsew')
+  TkGrid.columnconfigure root, 0, :weight => 1; TkGrid.rowconfigure root, 0, :weight => 1
+  Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
+  Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 2, :sticky => 'w')
+  image = TkPhotoImage.new(:file => character[:image])
+  Tk::Tile::Label.new(content) {image image}.grid(:column => 0, :row => 3, :sticky => 'w')
+
+  Tk.mainloop
 end
 
 def main_loop
@@ -89,7 +105,8 @@ def main_loop
   return if quiz_name.empty?
   questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
   descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  questions, descriptions = load_quiz(questions_file, descriptions_file)
+  images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
 
   loop do
     system 'clear'
