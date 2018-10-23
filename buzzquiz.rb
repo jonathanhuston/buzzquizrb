@@ -1,5 +1,4 @@
 require 'csv'
-require 'rainbow'
 require 'tk'
 require 'tkextlib/tile'
 require 'tkextlib/tkimg'
@@ -34,8 +33,7 @@ def parse_descriptions(lines, images_folder)
     records[count] = {}
     records[count][:name] = line[0]
     records[count][:color] = line[1].intern
-    records[count][:bright] = (line[2] == "bright")
-    records[count][:description] = line[3]
+    records[count][:description] = line[2]
     records[count][:image] = images_folder+line[0].tr(' ', '-')+".jpg"
     count += 1
   end
@@ -45,11 +43,13 @@ end
 def load_quiz(questions_file, descriptions_file, images_folder)
   lines = CSV.read(questions_file)
   lines[0][0].delete!("\ufeff")
+  title = lines.shift[0]
+  lines.shift
   questions = parse_questions(lines)
   lines = CSV.read(descriptions_file)
   lines[0][0].delete!("\ufeff")
   descriptions = parse_descriptions(lines, images_folder)
-  [questions, descriptions]
+  [title, questions, descriptions]
 end
 
 def run_quiz(questions, descriptions)
@@ -75,16 +75,7 @@ def run_quiz(questions, descriptions)
 end
 
 def display_character(character)
-  puts
-  if character[:bright]
-    puts Rainbow("You are #{character[:name]}.").color(character[:color]).bright
-    puts Rainbow("#{character[:description]}").color(character[:color]).bright
-  else
-    puts Rainbow("You are #{character[:name]}.").color(character[:color])
-    puts Rainbow("#{character[:description]}").color(character[:color])
-  end
-
-  root = TkRoot.new {title "You are #{character[:name]}."}
+  root = TkRoot.new {title "You are #{character[:name]}."; geometry "+300+100"}
   content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:sticky => 'nsew')
   TkGrid.columnconfigure root, 0, :weight => 1; TkGrid.rowconfigure root, 0, :weight => 1
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
@@ -106,11 +97,11 @@ def main_loop
   questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
   descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
   images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
-  questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
+  title, questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
 
   loop do
     system 'clear'
-    puts "Okay, let's play the #{quiz_name.capitalize} quiz!"
+    puts title
     puts
     point_totals = run_quiz(questions, descriptions)
     character = descriptions[point_totals.each_with_index.max[1]]
