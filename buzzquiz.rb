@@ -53,7 +53,7 @@ def load_quiz(questions_file, descriptions_file, images_folder)
 end
 
 def display_character(character)
-  root = TkRoot.new {title "You are #{character[:name]}."; geometry "+300+100"}
+  root = TkRoot.new {title "#{character[:name]}"; geometry "+300+100"}
   content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
   Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 2, :sticky => 'w')
