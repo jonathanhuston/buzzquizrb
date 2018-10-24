@@ -63,47 +63,40 @@ def display_character(character)
   Tk.mainloop
 end
 
-def helper(title, questions, descriptions, index, point_totals, answer)
-  point_totals.map!.with_index { |point_total, i| point_total + questions[index][:points][answer-1][i].to_i }
+def helper(index)
+  $point_totals.map!.with_index { |point_total, i| point_total + $questions[index][:points][$answer.to_i-1][i].to_i }
   index += 1
-  if index == questions.size
-    character = descriptions[point_totals.each_with_index.max[1]]
+  if index == $questions.size
+    character = $descriptions[$point_totals.each_with_index.max[1]]
     display_character(character)
   else
-    display_questions(title, questions, descriptions, index, point_totals)
+    display_questions(index)
   end
 end
 
-def display_questions(title, questions, descriptions, index, point_totals)
-  root = TkRoot.new {title title; geometry "+300+100"}
+def display_questions(index)
+  root = TkRoot.new {title $title; geometry "+300+100"}
   content = Tk::Tile::Frame.new(root) {padding "10 10 0 20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Frame.new(content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'nsew')
-  Tk::Tile::Label.new(content) {text questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
+  Tk::Tile::Label.new(content) {text $questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
   $answer = TkVariable.new
   row = 1
-  questions[index][:answers].each do |answer|
+  $questions[index][:answers].each do |answer|
     Tk::Tile::RadioButton.new(content) {text answer; variable $answer; value row}.grid(:column => 0, :row => row, :sticky => 'w')
     row += 1
   end
   Tk::Tile::Frame.new(content) {width 400; height 60}.grid(:column => 0, :row => row, :sticky => 'w')
-  button = Tk::Tile::Button.new(content) {text "Next"; command "helper \"#{title}\", #{questions}, #{descriptions}, #{index}, #{point_totals}, $answer.to_i"}
-  button.grid(:column => 0, :row => row, :sticky => 'w')
+  Tk::Tile::Button.new(content) {text "Next"; command "helper #{index}"}.grid(:column => 0, :row => row, :sticky => 'w')
   Tk.mainloop
 end
 
-system 'clear'
-if ARGV[0]
-  quiz_name = ARGV[0] 
-else
-  print 'Enter the name of a quiz: '
-  quiz_name = gets.strip.downcase
-end
-return if quiz_name.empty?
+quiz_name = ARGV[0]
+exit if quiz_name.nil?
 questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
 descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
 images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
-title, questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
+$title, $questions, $descriptions = load_quiz(questions_file, descriptions_file, images_folder)
 
-point_totals = Array.new(descriptions.size, 0)
+$point_totals = Array.new($descriptions.size, 0)
 
-display_questions(title, questions, descriptions, 0, point_totals)
+display_questions(0)
