@@ -52,32 +52,9 @@ def load_quiz(questions_file, descriptions_file, images_folder)
   [title, questions, descriptions]
 end
 
-def run_quiz(questions, descriptions)
-  point_totals = Array.new(descriptions.size, 0)
-  reply = 0
-
-  questions.each do |question|
-    puts question[:question]
-    question[:answers].each_with_index { |answer, i| puts "#{i+1}) #{answer}" }
-    puts
-    loop do
-      print ">> "
-      reply = $stdin.gets.strip
-      exit if reply.empty?
-      reply = reply.to_i
-      break if (reply > 0) && (reply <= question[:answers].size)
-      puts "Huh?"
-    end
-    point_totals.map!.with_index { |point_total, i| point_total + question[:points][reply-1][i].to_i }
-    puts
-  end
-  point_totals
-end
-
 def display_character(character)
   root = TkRoot.new {title "You are #{character[:name]}."; geometry "+300+100"}
-  content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:sticky => 'nsew')
-  TkGrid.columnconfigure root, 0, :weight => 1; TkGrid.rowconfigure root, 0, :weight => 1
+  content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
   Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 2, :sticky => 'w')
   image = TkPhotoImage.new(:file => character[:image])
@@ -86,33 +63,47 @@ def display_character(character)
   Tk.mainloop
 end
 
-def main_loop
-  if ARGV[0]
-    quiz_name = ARGV[0] 
-  else
-    print 'Enter the name of a quiz: '
-    quiz_name = gets.strip.downcase
-  end
-  return if quiz_name.empty?
-  questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-  descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
-  title, questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
-
-  loop do
-    system 'clear'
-    puts title
-    puts
-    point_totals = run_quiz(questions, descriptions)
+def helper(title, questions, descriptions, index, point_totals, answer)
+  point_totals.map!.with_index { |point_total, i| point_total + questions[index][:points][answer-1][i].to_i }
+  index += 1
+  if index == questions.size
     character = descriptions[point_totals.each_with_index.max[1]]
     display_character(character)
-    print "\n\n"
-    print "Play again? "
-    again = $stdin.gets.strip
-    break if ['n', 'N', ''].include? again
+  else
+    display_questions(title, questions, descriptions, index, point_totals)
   end
 end
 
+def display_questions(title, questions, descriptions, index, point_totals)
+  root = TkRoot.new {title title; geometry "+300+100"}
+  content = Tk::Tile::Frame.new(root) {padding "10 10 0 20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
+  Tk::Tile::Frame.new(content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'nsew')
+  Tk::Tile::Label.new(content) {text questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
+  $answer = TkVariable.new
+  row = 1
+  questions[index][:answers].each do |answer|
+    Tk::Tile::RadioButton.new(content) {text answer; variable $answer; value row}.grid(:column => 0, :row => row, :sticky => 'w')
+    row += 1
+  end
+  Tk::Tile::Frame.new(content) {width 400; height 60}.grid(:column => 0, :row => row, :sticky => 'w')
+  button = Tk::Tile::Button.new(content) {text "Next"; command "helper \"#{title}\", #{questions}, #{descriptions}, #{index}, #{point_totals}, $answer.to_i"}
+  button.grid(:column => 0, :row => row, :sticky => 'w')
+  Tk.mainloop
+end
+
 system 'clear'
-main_loop
-puts "Goodbye!\n"
+if ARGV[0]
+  quiz_name = ARGV[0] 
+else
+  print 'Enter the name of a quiz: '
+  quiz_name = gets.strip.downcase
+end
+return if quiz_name.empty?
+questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+title, questions, descriptions = load_quiz(questions_file, descriptions_file, images_folder)
+
+point_totals = Array.new(descriptions.size, 0)
+
+display_questions(title, questions, descriptions, 0, point_totals)
