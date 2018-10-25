@@ -3,6 +3,7 @@ require 'tk'
 require 'tkextlib/tile'
 require 'tkextlib/tkimg'
 
+
 def parse_questions(lines)
   records = []
   count = 0
@@ -53,17 +54,16 @@ def load_quiz(questions_file, descriptions_file, images_folder)
 end
 
 def display_character(character)
-  root = TkRoot.new {title "#{character[:name]}"; geometry "+300+100"}
+  root = TkRoot.new {title "#{character[:name]}"}
   content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
   Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 2, :sticky => 'w')
   image = TkPhotoImage.new(:file => character[:image])
   Tk::Tile::Label.new(content) {image image}.grid(:column => 0, :row => 3, :sticky => 'w')
-
-  Tk.mainloop
 end
 
 def helper(index)
+  display_questions(index) if $answer == ""
   $point_totals.map!.with_index { |point_total, i| point_total + $questions[index][:points][$answer.to_i-1][i].to_i }
   index += 1
   if index == $questions.size
@@ -75,8 +75,8 @@ def helper(index)
 end
 
 def display_questions(index)
-  root = TkRoot.new {title $title; geometry "+300+100"}
-  content = Tk::Tile::Frame.new(root) {padding "10 10 0 20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
+  root = TkRoot.new {title $title}
+  content = Tk::Tile::Frame.new(root) {padding "20 20 0 20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Frame.new(content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text $questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
   $answer = TkVariable.new
@@ -91,12 +91,18 @@ def display_questions(index)
 end
 
 quiz_name = ARGV[0]
-exit if quiz_name.nil?
-questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
-$title, $questions, $descriptions = load_quiz(questions_file, descriptions_file, images_folder)
+begin
+  questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+  descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+  images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  $title, $questions, $descriptions = load_quiz(questions_file, descriptions_file, images_folder)
 
-$point_totals = Array.new($descriptions.size, 0)
+  $point_totals = Array.new($descriptions.size, 0)
+rescue
+  puts "Game engine unable to find properly formatted game data."
+  puts "Check command line argument and game data files."
+  exit
+end
 
+root = TkRoot.new {geometry "+300+150"}
 display_questions(0)
