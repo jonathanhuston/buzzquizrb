@@ -3,6 +3,8 @@ require 'tk'
 require 'tkextlib/tile'
 require 'tkextlib/tkimg'
 
+DX = 300
+DY = 150
 
 def parse_questions(lines)
   records = []
@@ -53,12 +55,13 @@ def load_quiz(questions_file, descriptions_file, images_folder)
   [title, questions, descriptions]
 end
 
+#FIX: dual displays
 def display_character(character)
   $character_window = TkToplevel.new {title "#{character[:name]}"}
   $character_window[:geometry]=$root[:geometry][$root[:geometry].index("+")..-1]
   content = Tk::Tile::Frame.new($character_window) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 0, :sticky => 'w')
-  Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
+  Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 1, :columnspan => 3, :sticky => 'w')
   image = TkPhotoImage.new(:file => character[:image])
   Tk::Tile::Label.new(content) {image image}.grid(:column => 0, :row => 2, :sticky => 'w')
   Tk::Tile::Frame.new(content) {height 60}.grid(:column => 0, :row => 3)
@@ -112,5 +115,5 @@ rescue
   exit
 end
 
-TkRoot.new {geometry "+300+150"}
+TkRoot.new {geometry "+#{DX}+#{DY}"}
 run_quiz
