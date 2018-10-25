@@ -54,8 +54,9 @@ def load_quiz(questions_file, descriptions_file, images_folder)
 end
 
 def display_character(character)
-  root = TkRoot.new {title "#{character[:name]}"}
-  content = Tk::Tile::Frame.new(root) {padding "20"}.grid(:column => 0, :row => 0)
+  $character_window = TkToplevel.new {title "#{character[:name]}"}
+  $character_window[:geometry]=$root[:geometry][$root[:geometry].index("+")..-1]
+  content = Tk::Tile::Frame.new($character_window) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Label.new(content) {text "You are #{character[:name]}."; foreground character[:color]}.grid(:column => 0, :row => 0, :sticky => 'w')
   Tk::Tile::Label.new(content) {text character[:description]; foreground character[:color]}.grid(:column => 0, :row => 1, :sticky => 'w')
   image = TkPhotoImage.new(:file => character[:image])
@@ -78,8 +79,8 @@ def helper(index)
 end
 
 def display_questions(index)
-  root = TkRoot.new {title $title}
-  content = Tk::Tile::Frame.new(root) {padding "20 20 0 20"}.grid(:column => 0, :row => 0)
+  $root = TkRoot.new {title $title}
+  content = Tk::Tile::Frame.new($root) {padding "20 20 0 20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Frame.new(content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'w')
   Tk::Tile::Label.new(content) {text $questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
   $answer = TkVariable.new
@@ -94,7 +95,7 @@ def display_questions(index)
 end
 
 def run_quiz
-  TkRoot.new {geometry "+300+150"}
+  $character_window.destroy if defined? $character_window
   $point_totals = Array.new($descriptions.size, 0)
   display_questions(0)
 end
@@ -111,4 +112,5 @@ rescue
   exit
 end
 
+TkRoot.new {geometry "+300+150"}
 run_quiz
