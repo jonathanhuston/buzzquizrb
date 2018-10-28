@@ -105,9 +105,9 @@ end
 
 quiz_name = ARGV[0]
 begin
-  questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-  descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  questions_file = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+  descriptions_file = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+  images_folder = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-images/"
   $title, $questions, $descriptions = load_quiz(questions_file, descriptions_file, images_folder)
 rescue
   puts "Game engine unable to find properly formatted game data."
