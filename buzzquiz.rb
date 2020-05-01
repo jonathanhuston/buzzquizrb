@@ -4,7 +4,7 @@ require 'tkextlib/tile'
 require 'tkextlib/tkimg'
 
 DX = 300
-DY = 150
+DY = 0
 
 def parse_questions(lines)
   records = []
@@ -77,7 +77,7 @@ def display_questions(index)
   $questions[index][:answers].each do |answer|
     if answer[-4..-1] == ".jpg"
       image = TkPhotoImage.new(:file => $images_folder+answer)
-      scale = image.height / 60
+      scale = image.height / 75
       scale = 1 if scale < 1
       scaled_image = TkPhotoImage.new.copy(image, :subsample => [scale, scale])
       image = nil
@@ -118,9 +118,9 @@ end
 
 quiz_name = ARGV[0]
 begin
-  $questions_file = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-  $descriptions_file = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  $images_folder = "#{Dir.home}/buzzquiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  $questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+  $descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+  $images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
   $title, $questions, $descriptions = load_quiz()
 rescue
   puts "Game engine unable to find properly formatted game data."
