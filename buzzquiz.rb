@@ -4,7 +4,7 @@ require 'tkextlib/tile'
 require 'tkextlib/tkimg'
 
 DX = 300
-DY = 0
+DY = 50
 
 def parse_questions(lines)
   records = []
@@ -43,13 +43,13 @@ def parse_descriptions(lines)
   records
 end
 
-def load_quiz()
-  lines = CSV.read($questions_file)
+def load_quiz(questions_file, descriptions_file)
+  lines = CSV.read(questions_file)
   lines[0][0].delete!("\ufeff")
   title = lines.shift[0]
   lines.shift
   questions = parse_questions(lines)
-  lines = CSV.read($descriptions_file)
+  lines = CSV.read(descriptions_file)
   lines[0][0].delete!("\ufeff")
   descriptions = parse_descriptions(lines)
   [title, questions, descriptions]
@@ -72,7 +72,7 @@ def display_questions(index)
   $content = Tk::Tile::Frame.new($root) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Frame.new($content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'w')
   Tk::Tile::Label.new($content) {text $questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
-  $answer = TkVariable.new($content)
+  response = TkVariable.new("")
   row = 1
   $questions[index][:answers].each do |answer|
     if answer[-4..-1] == ".jpg"
@@ -81,14 +81,14 @@ def display_questions(index)
       scale = 1 if scale < 1
       scaled_image = TkPhotoImage.new.copy(image, :subsample => [scale, scale])
       image = nil
-      Tk::Tile::RadioButton.new($content) {text ""; image scaled_image; variable $answer; value row}.grid(:column => 0, :row => row, :sticky => 'w')
+      Tk::Tile::RadioButton.new($content) {text ""; image scaled_image; variable response; value row}.grid(:column => 0, :row => row, :sticky => 'w')
     else
-      Tk::Tile::RadioButton.new($content) {text answer; variable $answer; value row}.grid(:column => 0, :row => row, :sticky => 'w')
+      Tk::Tile::RadioButton.new($content) {text answer; variable response; value row}.grid(:column => 0, :row => row, :sticky => 'w')
     end
     row += 1
   end
   Tk::Tile::Frame.new($content) {width 400; height 60}.grid(:column => 0, :row => row)
-  Tk::Tile::Button.new($content) {text "Next"; command proc { next_question index }}.grid(:column => 0, :row => row, :sticky => 'w')
+  Tk::Tile::Button.new($content) {text "Next"; command proc { next_question(index, response) }}.grid(:column => 0, :row => row, :sticky => 'w')
 end
 
 
@@ -102,10 +102,12 @@ def run_quiz(index)
   end
 end
 
-def next_question(index)
-  $content.destroy
-  $point_totals.map!.with_index { |point_total, i| point_total + $questions[index][:points][$answer.to_i-1][i].to_i }
-  run_quiz index + 1
+def next_question(index, response)
+  if response != ""
+    $content.destroy
+    $point_totals.map!.with_index { |point_total, i| point_total + $questions[index][:points][response.to_i-1][i].to_i }
+    run_quiz(index + 1)
+  end
 end
 
 def new_game()
@@ -118,17 +120,17 @@ end
 
 quiz_name = ARGV[0]
 begin
-  $questions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-  $descriptions_file = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  $images_folder = "#{Dir.home}/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
-  $title, $questions, $descriptions = load_quiz()
+  questions_file = "#{Dir.home}/Documents/quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
+  descriptions_file = "#{Dir.home}/Documents/quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
+  $images_folder = "#{Dir.home}/Documents/quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  $title, $questions, $descriptions = load_quiz(questions_file, descriptions_file)
 rescue
   puts "Game engine unable to find properly formatted game data."
   puts "Check command line argument and game data files."
   exit
 end
 
-$root = TkRoot.new {title $title; geometry "+#{DX}+#{DY}"}
+$root = TkRoot.new {title $title; geometry "+#{DX}+#{DY}"; resizable 0, 0}
 $point_totals = Array.new($descriptions.size, 0)
 run_quiz 0
 Tk.mainloop
