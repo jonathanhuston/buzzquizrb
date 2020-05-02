@@ -76,23 +76,23 @@ def display_questions(index)
   $content = Tk::Tile::Frame.new($root) {padding "20"}.grid(:column => 0, :row => 0, :sticky => 'nsew')
   Tk::Tile::Frame.new($content) {width 400; height 40}.grid(:column => 0, :row => 0, :sticky => 'w')
   Tk::Tile::Label.new($content) {text $questions[index][:question]}.grid(:column => 0, :row => 0, :sticky => 'w')
-  response = TkVariable.new("")
-  row = 1
+  response = TkVariable.new
+  pos = 1
   $questions[index][:answers].each do |answer|
     if [".jpeg", ".jpg", ".png", ".gif", ".tiff"].include? File.extname(answer)
       image = TkPhotoImage.new(:file => $images_folder+answer)
-      scale = image.height / 75
+      scale = image.height / 100
       scale = 1 if scale < 1
       scaled_image = TkPhotoImage.new.copy(image, :subsample => [scale, scale])
       image = nil
-      Tk::Tile::RadioButton.new($content) {text ""; image scaled_image; variable response; value row}.grid(:column => 0, :row => row, :sticky => 'w')
+      Tk::Tile::RadioButton.new($content) {text ""; image scaled_image; variable response; value pos}.grid(:column => (1 - (pos % 2)), :row => (pos - 1) / 2 + 1, :sticky => 'w')
     else
-      Tk::Tile::RadioButton.new($content) {text answer; variable response; value row}.grid(:column => 0, :row => row, :sticky => 'w')
+      Tk::Tile::RadioButton.new($content) {text answer; variable response; value pos}.grid(:column => 0, :row => pos, :sticky => 'w')
     end
-    row += 1
+    pos += 1
   end
-  Tk::Tile::Frame.new($content) {width 400; height 60}.grid(:column => 0, :row => row)
-  Tk::Tile::Button.new($content) {text "Next"; command proc { next_question(index, response) }}.grid(:column => 0, :row => row, :sticky => 'w')
+  Tk::Tile::Frame.new($content) {width 400; height 60}.grid(:column => 0, :row => $questions.index.count)
+  Tk::Tile::Button.new($content) {text "Next"; command proc { next_question(index, response) }}.grid(:column => 0, :row => $questions.index.count, :sticky => 'w')
 end
 
 
@@ -107,7 +107,7 @@ def run_quiz(index)
 end
 
 def next_question(index, response)
-  if response != ""
+  if response != nil
     $content.destroy
     $point_totals.map!.with_index { |point_total, i| point_total + $questions[index][:points][response.to_i-1][i].to_i }
     run_quiz(index + 1)
