@@ -37,7 +37,11 @@ def parse_descriptions(lines)
     records[count][:name] = line[0]
     records[count][:color] = line[1].intern
     records[count][:description] = line[2]
-    records[count][:image] = $images_folder+line[0].tr(' ', '-')+".jpg"
+    if line.count == 4
+      records[count][:image] = $images_folder+line[3]
+    else
+      records[count][:image] = $images_folder+line[0].tr(' ', '-')+".jpg"
+    end
     count += 1
   end
   records
@@ -75,7 +79,7 @@ def display_questions(index)
   response = TkVariable.new("")
   row = 1
   $questions[index][:answers].each do |answer|
-    if answer[-4..-1] == ".jpg"
+    if [".jpeg", ".jpg", ".png", ".gif", ".tiff"].include? File.extname(answer)
       image = TkPhotoImage.new(:file => $images_folder+answer)
       scale = image.height / 75
       scale = 1 if scale < 1
