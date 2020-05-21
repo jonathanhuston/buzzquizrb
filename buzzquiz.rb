@@ -4,7 +4,7 @@ require 'tkextlib/tile'
 require 'tkextlib/tkimg'
 
 DX = 300
-DY = 50
+DY = 100
 
 def parse_questions(lines)
   records = []
