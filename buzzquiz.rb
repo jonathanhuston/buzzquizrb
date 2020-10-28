@@ -125,7 +125,7 @@ def new_game()
 end
 
 
-quiz_name = ARGV[0]
+quiz_name = ARGV[0].downcase
 begin
   questions_file = "quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
   descriptions_file = "quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
