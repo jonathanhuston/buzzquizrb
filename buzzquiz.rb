@@ -125,6 +125,7 @@ def new_game()
 end
 
 
+# main
 begin
   quiz_name = ARGV[0].downcase.tr(' ', '-')
   questions_file = "quiz_data/#{quiz_name}-questions.csv"
