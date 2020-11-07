@@ -125,11 +125,11 @@ def new_game()
 end
 
 
-quiz_name = ARGV[0].downcase
 begin
-  questions_file = "quiz_data/#{quiz_name.tr(' ', '-')}-questions.csv"
-  descriptions_file = "quiz_data/#{quiz_name.tr(' ', '-')}-descriptions.csv"
-  $images_folder = "quiz_data/#{quiz_name.tr(' ', '-')}-images/"
+  quiz_name = ARGV[0].downcase.tr(' ', '-')
+  questions_file = "quiz_data/#{quiz_name}-questions.csv"
+  descriptions_file = "quiz_data/#{quiz_name}-descriptions.csv"
+  $images_folder = "quiz_data/#{quiz_name}-images/"
   $title, $questions, $descriptions = load_quiz(questions_file, descriptions_file)
 rescue
   puts "Game engine unable to find properly formatted game data."
