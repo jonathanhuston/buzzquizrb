@@ -6,3 +6,4 @@ Quiz data stored in CSV files
 
 Requires Tcl/Tk
 
+USAGE: ruby buzzquiz.rb [QUIZNAME]
